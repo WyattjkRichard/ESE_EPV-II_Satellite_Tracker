@@ -2,12 +2,12 @@ import requests
 import json
 import geocoder
 import ephem
-from datetime import datetime
 import RPi.GPIO as GPIO
 import time
-
+from datetime import datetime
 
 TLE_URL = "https://tle.ivanstanojevic.me/api/tle/"
+ELEV_URL = "https://api.open-elevation.com/api/v1/lookup?locations="
 SAT_ID = 25544
 
 # "name":"ISS (ZARYA)"
@@ -30,6 +30,8 @@ def init_observer(sat_id):
     satellite = ephem.readtle(tle_name, tle_line1, tle_line2)
     sat_dish = ephem.Observer()
     sat_dish.lat, sat_dish.long = geocoder.ip('me').latlng
+    elevation = requests.get(f"{ELEV_URL}{geocoder.ip('me').latlng[0]},{geocoder.ip('me').latlng[1]}").json()["results"][0]["elevation"]
+
     return sat_dish, satellite
 
 
@@ -53,7 +55,7 @@ def gpio_test():
         for halfstep in range(8):
             for pin in range(4):
                 GPIO.output(control_pins[pin], halfstep_seq[halfstep][pin])
-        time.sleep(0.001)
+            time.sleep(0.001)
     GPIO.cleanup()
 
 
