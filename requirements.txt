@@ -2,3 +2,4 @@ ephem
 geocoder
 requests
 RPi.GPIO
+pyserial

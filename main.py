@@ -2,8 +2,9 @@ import requests
 import json
 import geocoder
 import ephem
-import RPi.GPIO as GPIO
 import time
+import serial
+import RPi.GPIO as GPIO
 from datetime import datetime
 
 TLE_URL = "https://tle.ivanstanojevic.me/api/tle/"
@@ -13,6 +14,8 @@ SAT_ID = 25544
 # "name":"ISS (ZARYA)"
 # "line1":"1 25544U 98067A   23314.24517226  .00093162  00000+0  16505-2 0  9991"
 # "line2":"2 25544  51.6416 325.0671 0002415 274.2971 187.0056 15.49490004424444"
+
+# arduino is /dev/ttyACM0
 
 
 def jprint(obj):
@@ -65,4 +68,13 @@ if __name__ == '__main__':
     sat.compute(satDish)
     print(sat.az)
     print(sat.alt)
-    gpio_test()
+    # gpio_test()
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+    ser.reset_input_buffer()
+    while True:
+        satDish.date = datetime.utcnow()
+        sat.compute(satDish)
+        ser.write(bytes(f"{sat.az}, {sat.alt}\n", encoding="utf-8"))
+        line = ser.readline().decode('utf-8').rstrip()
+        print(line)
+        time.sleep(1)
