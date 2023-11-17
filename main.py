@@ -34,7 +34,7 @@ def init_observer(sat_id):
     sat_dish = ephem.Observer()
     sat_dish.lat, sat_dish.long = geocoder.ip('me').latlng
     elevation = requests.get(f"{ELEV_URL}{geocoder.ip('me').latlng[0]},{geocoder.ip('me').latlng[1]}").json()["results"][0]["elevation"]
-
+    print(f"Elevation: {elevation}")
     return sat_dish, satellite
 
 
@@ -66,15 +66,15 @@ if __name__ == '__main__':
     satDish, sat = init_observer(SAT_ID)
     satDish.date = datetime.utcnow()
     sat.compute(satDish)
-    print(sat.az)
-    print(sat.alt)
-    # gpio_test()
+    print(f"Azimuth: {sat.az}")         # 0-360 deg east of north
+    print(f"Altitude: {sat.alt}\n")     # +- 90 deg relative to the horizon's great circle
+    gpio_test()
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
     ser.reset_input_buffer()
     while True:
         satDish.date = datetime.utcnow()
         sat.compute(satDish)
-        ser.write(bytes(f"{sat.az}, {sat.alt}\n", encoding="utf-8"))
+        ser.write(bytes(f"az: {sat.az}, alt: {sat.alt}\n", encoding="utf-8"))
         line = ser.readline().decode('utf-8').rstrip()
         print(line)
         time.sleep(1)
