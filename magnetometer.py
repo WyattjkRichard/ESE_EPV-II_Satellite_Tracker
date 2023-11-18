@@ -23,7 +23,7 @@ INT_THS_H = 0x33        # Interrupt threshold.
 
 
 def read_heading(bus):
-
+    # Reboot Sensor
     bus.write_byte_data(MAGNETOMETER_ADDRESS, CTRL_REG2, 0b00001000)
     # Read magnetometer data registers
     mag_x_low = bus.read_byte_data(MAGNETOMETER_ADDRESS, OUT_X_L)
@@ -39,6 +39,7 @@ def read_heading(bus):
     mag_z = (mag_z_high << 8) | mag_z_low
 
     return mag_x, mag_y, mag_z
+
 
 def read_ctl(bus):
     ctl1 = format(bus.read_byte_data(MAGNETOMETER_ADDRESS, CTRL_REG1), '#010b')
