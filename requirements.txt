@@ -3,3 +3,4 @@ geocoder
 requests
 RPi.GPIO
 pyserial
+smbus
