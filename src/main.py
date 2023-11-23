@@ -1,17 +1,17 @@
 import json
 import time
-import smbus
+import smbus2
 import RPi.GPIO as GPIO
 from datetime import datetime
 
-from TLE import init_observer
-from encoder import read_angle
-from magnetometer import read_heading
+from src.modules.TLE import *
+from src.modules.encoder import *
+from src.modules.magnetometer import *
 
 SAT_ID = 25544
 
 # Create I2C bus
-bus = smbus.SMBus(1)  # Use 1 for the Raspberry Pi 3
+bus = smbus2.SMBus(1)  # Use 1 for the Raspberry Pi 3
 
 
 def jprint(obj):
@@ -48,14 +48,23 @@ if __name__ == '__main__':
     satDish, sat = init_observer(SAT_ID)
     # Azimuth: 0-360 deg east of north
     # Altitude: +- 90 deg relative to the horizon's great circle
+    pin = 11
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, 0)
 
     try:
         while True:
             mag_x, mag_y, mag_z = read_heading(bus)
             print(f"Magnetometer Data - X: {mag_x}, Y: {mag_y}, Z: {mag_z}")
 
-            angle = read_angle(bus)
-            print(f"Angle: {angle:.2f} degrees")
+            GPIO.output(pin, 0)
+            angle1 = read_angle(bus)
+            print(f"Alt angle: {angle1:.2f} degrees")
+
+            GPIO.output(pin, 1)
+            angle2 = read_angle(bus)
+            print(f"Az angle: {angle2:.2f} degrees")
 
             satDish.date = datetime.utcnow()
             sat.compute(satDish)
@@ -68,4 +77,5 @@ if __name__ == '__main__':
         print("\nExiting program.")
     finally:
         # Cleanup resources
+        GPIO.cleanup()
         bus.close()
